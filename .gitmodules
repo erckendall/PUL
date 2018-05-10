@@ -1,0 +1,3 @@
+[submodule "PyUltraLight-Release-Paper"]
+	path = PyUltraLight-Release-Paper
+	url = https://github.com/erckendall/PyUltraLight-Release-Paper.git
