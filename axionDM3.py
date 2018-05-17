@@ -422,13 +422,10 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             f.close()
     if (save_options[2]):
         plane = rho[:, :, int(resol / 2)]
-        # line = rho[:, int(resol / 2), int(resol / 2)]
         plane_psi = psi[:, :, int(resol / 2)]
         if (npy):
             file_name = "plane_r={0}_m={1}_#{2}.npy".format(r, m, 0)
             np.save(os.path.join(os.path.expanduser(save_path), file_name), plane)
-            # file_name2 = "line_r={0}_m={1}_#{2}.npy".format(r, m, 0)
-            # np.save(os.path.join(os.path.expanduser(save_path), file_name2), line)
             file_name = "plane_psi_r={0}_m={1}_#{2}.npy".format(r, m, 0)
             np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_psi)
         if (npz):
@@ -472,7 +469,11 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         egpsilist.append(Vcell * np.sum(egpsi))
         ekandqlist.append(Vcell * np.sum(ekandq))
         mtotlist.append(Vcell * np.sum(massarr))
-
+    if (save_options[5]):
+        line = rho[:, int(resol / 2), int(resol / 2)]
+        file_name2 = "line_r={0}_m={1}_#{2}.npy".format(r, m, 0)
+        np.save(os.path.join(os.path.expanduser(save_path), file_name2), line)
+        
 
     ############################################
     # LOOP NOW BEGINS
