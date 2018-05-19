@@ -401,7 +401,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
 
     halfstepornot = 1  # 1 for a half step 0 for a full step
-
+    tenth = float(save_number/10)
 
 
     ###############################
@@ -538,6 +538,17 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 egpsilist.append(Vcell * np.sum(egpsi))
                 ekandqlist.append(Vcell * np.sum(ekandq))
                 mtotlist.append(Vcell*np.sum(massarr))
+
+                if (ix+1) % tenth == 0:
+                    label = (ix+1)/tenth
+                    file_name = "{}{}".format(label,'egy_cumulative.npy')
+                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egylist)
+                    file_name = "{}{}".format(label,'egpcm_cumulative.npy')
+                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egpcmlist)
+                    file_name = "{}{}".format(label,'egpsi_cumulative.npy')
+                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egpsilist)
+                    file_name = "{}{}".format(label,'ekandq_cumulative.npy')
+                    np.save(os.path.join(os.path.expanduser(save_path), file_name), ekandqlist)
 
 
         ################################################################################
