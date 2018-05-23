@@ -375,12 +375,15 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 #########################################################################################################################
 
     if (save_options[3]):
+        egparr = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
 
         abspsi2 = ne.evaluate('real((abs(psi))**2)')
         egpcm = ne.evaluate('real((-central_mass/distarray)*abspsi2)')
 
         phisi = ne.evaluate("phisp+(central_mass)/distarray")
         egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
+
+        egparr = abs(egpsi+egpcm)
 
         funct = fft_psi(psi)
         funct = ne.evaluate('-karray2*funct')
@@ -469,6 +472,9 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         egpsilist.append(Vcell * np.sum(egpsi))
         ekandqlist.append(Vcell * np.sum(ekandq))
         mtotlist.append(Vcell * np.sum(massarr))
+        plane_egp = egparr[:, :, int(resol / 2)]
+        file_name = "egp_plane_#{0}.npy".format(0)
+        np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_egp)
     if (save_options[5]):
         line = rho[:, int(resol / 2), int(resol / 2)]
         file_name2 = "line_r={0}_m={1}_#{2}.npy".format(r, m, 0)
@@ -520,6 +526,12 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
                 #egpsi = ne.evaluate('real(phisi*abspsi2)')
 
+                if ((ix + 1) % its_per_save) == 0:
+                    egparr = abs(egpcm + egpsi)
+                    plane_egp = egparr[:, :, int(resol / 2)]
+                    file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
+                    np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_egp)
+
                 #Kinetic and Quantum energy densities combined
                 funct = fft_psi(psi)
                 funct = ne.evaluate('-karray2*funct')
@@ -539,16 +551,19 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 ekandqlist.append(Vcell * np.sum(ekandq))
                 mtotlist.append(Vcell*np.sum(massarr))
 
-                if (ix+1) % tenth == 0:
-                    label = (ix+1)/tenth
-                    file_name = "{}{}".format(label,'egy_cumulative.npy')
-                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egylist)
-                    file_name = "{}{}".format(label,'egpcm_cumulative.npy')
-                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egpcmlist)
-                    file_name = "{}{}".format(label,'egpsi_cumulative.npy')
-                    np.save(os.path.join(os.path.expanduser(save_path), file_name), egpsilist)
-                    file_name = "{}{}".format(label,'ekandq_cumulative.npy')
-                    np.save(os.path.join(os.path.expanduser(save_path), file_name), ekandqlist)
+#Uncomment next section if partially complete energy lists desired as simulation runs.
+#In this way, some energy data will be saved even if the simulation is terminated early.
+
+                # if (ix+1) % tenth == 0:
+                #     label = (ix+1)/tenth
+                #     file_name = "{}{}".format(label,'egy_cumulative.npy')
+                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egylist)
+                #     file_name = "{}{}".format(label,'egpcm_cumulative.npy')
+                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egpcmlist)
+                #     file_name = "{}{}".format(label,'egpsi_cumulative.npy')
+                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egpsilist)
+                #     file_name = "{}{}".format(label,'ekandq_cumulative.npy')
+                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), ekandqlist)
 
 
         ################################################################################
