@@ -367,8 +367,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     stability = np.zeros(save_number + 1)
 
+    if (s_mass_unit == ''):
+        cmass = central_mass
+    else:
+        cmass = convert(central_mass, s_mass_unit, 'm')
+
     phisp = irfft_phi(phik)
-    phisp = ne.evaluate("phisp-(central_mass)/distarray")
+    phisp = ne.evaluate("phisp-(cmass)/distarray")
 
     Vcell = (gridlength / float(resol)) ** 3
 
@@ -378,9 +383,9 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         egparr = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
 
         abspsi2 = ne.evaluate('real((abs(psi))**2)')
-        egpcm = ne.evaluate('real((-central_mass/distarray)*abspsi2)')
+        egpcm = ne.evaluate('real((-cmass/distarray)*abspsi2)')
 
-        phisi = ne.evaluate("phisp+(central_mass)/distarray")
+        phisi = ne.evaluate("phisp+(cmass)/distarray")
         egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
 
         egparr = abs(egpsi+egpcm)
@@ -506,7 +511,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         phik = ne.evaluate("-4*3.141593*(phik)/rkarray2")
         phik[0, 0, 0] = 0
         phisp = irfft_phi(phik)
-        phisp = ne.evaluate("phisp-(central_mass)/distarray")
+        phisp = ne.evaluate("phisp-(cmass)/distarray")
 
         #Next if statement ensures that an extra half step is performed at each save point
         if (((ix + 1) % its_per_save) == 0):
@@ -519,10 +524,10 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             if (save_options[3]):
                 #Gravitational potential energy density associated with the central potential
                 abspsi2 = ne.evaluate('real((abs(psi))**2)')
-                egpcm = ne.evaluate('real((-central_mass/distarray)*abspsi2)')
+                egpcm = ne.evaluate('real((-cmass/distarray)*abspsi2)')
 
                 #Gravitational potential energy density of self-interaction of the condensate
-                phisi = ne.evaluate("phisp+(central_mass)/distarray")
+                phisi = ne.evaluate("phisp+(cmass)/distarray")
                 egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
                 #egpsi = ne.evaluate('real(phisi*abspsi2)')
 
