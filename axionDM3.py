@@ -454,6 +454,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     halfstepornot = 1  # 1 for a half step 0 for a full step
     tenth = float(save_number/10)
 
+    loc = save_path + '/' + timestamp
 
     ###############################
     # HERE I'M ADDING IN THE PRE-LOOP SAVE I.E. INITIAL CONFIG
@@ -461,13 +462,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     if (save_options[0]):
         if (npy):
             file_name = "rho_#{0}.npy".format(0)
-            np.save(os.path.join(os.path.expanduser(save_path), file_name), rho)
+            np.save(os.path.join(os.path.expanduser(loc), file_name), rho)
         if (npz):
             file_name = "rho_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(save_path), file_name), rho)
+            np.savez(os.path.join(os.path.expanduser(loc), file_name), rho)
         if (hdf5):
             file_name = "rho_#{0}.hdf5".format(0)
-            file_name = os.path.join(os.path.expanduser(save_path), file_name)
+            file_name = os.path.join(os.path.expanduser(loc), file_name)
             f = h5py.File(file_name, 'w')
             dset = f.create_dataset("init", data=rho)
             f.close()
@@ -476,28 +477,28 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         plane_psi = psi[:, :, int(resol / 2)]
         if (npy):
             file_name = "plane_#{0}.npy".format(0)
-            np.save(os.path.join(os.path.expanduser(save_path), file_name), plane)
+            np.save(os.path.join(os.path.expanduser(loc), file_name), plane)
             file_name = "plane_psi_#{0}.npy".format(0)
-            np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_psi)
+            np.save(os.path.join(os.path.expanduser(loc), file_name), plane_psi)
         if (npz):
             file_name = "plane_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(save_path), file_name), plane)
+            np.savez(os.path.join(os.path.expanduser(loc), file_name), plane)
         if (hdf5):
             file_name = "plane_#{0}.hdf5".format(0)
-            file_name = os.path.join(os.path.expanduser(save_path), file_name)
+            file_name = os.path.join(os.path.expanduser(loc), file_name)
             f = h5py.File(file_name, 'w')
             dset = f.create_dataset("init", data=plane)
             f.close()
     if (save_options[1]):
         if (npy):
             file_name = "psi_#{0}.npy".format(0)
-            np.save(os.path.join(os.path.expanduser(save_path), file_name), psi)
+            np.save(os.path.join(os.path.expanduser(loc), file_name), psi)
         if (npz):
             file_name = "psi_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(save_path), file_name), psi)
+            np.savez(os.path.join(os.path.expanduser(loc), file_name), psi)
         if (hdf5):
             file_name = "psi_#{0}.hdf5".format(0)
-            file_name = os.path.join(os.path.expanduser(save_path), file_name)
+            file_name = os.path.join(os.path.expanduser(loc), file_name)
             f = h5py.File(file_name, 'w')
             dset = f.create_dataset("init", data=psi)
             f.close()
@@ -513,7 +514,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         xzplane = rho[:, y_pos, :]
         if (npz):
             file_name = "xzplane_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(save_path), file_name), xzplane)
+            np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
     if (save_options[3]):
         egylist.append(Vcell * np.sum(egy))
         egpcmlist.append(Vcell * np.sum(egpcm))
@@ -522,11 +523,11 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         mtotlist.append(Vcell * np.sum(massarr))
         plane_egp = egparr[:, :, int(resol / 2)]
         file_name = "egp_plane_#{0}.npy".format(0)
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_egp)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
     if (save_options[5]):
         line = rho[:, int(resol / 2), int(resol / 2)]
         file_name2 = "line_#{0}.npy".format(0)
-        np.save(os.path.join(os.path.expanduser(save_path), file_name2), line)
+        np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
         
 
     ############################################
@@ -578,7 +579,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                     egparr = abs(egpcm + egpsi)
                     plane_egp = egparr[:, :, int(resol / 2)]
                     file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
-                    np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_egp)
+                    np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
 
                 #Kinetic and Quantum energy densities combined
                 funct = fft_psi(psi)
@@ -605,13 +606,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 # if (ix+1) % tenth == 0:
                 #     label = (ix+1)/tenth
                 #     file_name = "{}{}".format(label,'egy_cumulative.npy')
-                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egylist)
+                #     np.save(os.path.join(os.path.expanduser(loc), file_name), egylist)
                 #     file_name = "{}{}".format(label,'egpcm_cumulative.npy')
-                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egpcmlist)
+                #     np.save(os.path.join(os.path.expanduser(loc), file_name), egpcmlist)
                 #     file_name = "{}{}".format(label,'egpsi_cumulative.npy')
-                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), egpsilist)
+                #     np.save(os.path.join(os.path.expanduser(loc), file_name), egpsilist)
                 #     file_name = "{}{}".format(label,'ekandq_cumulative.npy')
-                #     np.save(os.path.join(os.path.expanduser(save_path), file_name), ekandqlist)
+                #     np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
 
 
         ################################################################################
@@ -619,13 +620,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         if (save_options[0] and ((ix + 1) % its_per_save) == 0):
             if (npy):
                 file_name = "rho_#{0}.npy".format((ix + 1) / its_per_save)
-                np.save(os.path.join(os.path.expanduser(save_path), file_name), rho)
+                np.save(os.path.join(os.path.expanduser(loc), file_name), rho)
             if (npz):
                 file_name = "rho_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(save_path), file_name), rho)
+                np.savez(os.path.join(os.path.expanduser(loc), file_name), rho)
             if (hdf5):
                 file_name = "rho_#{0}.hdf5".format((ix + 1) / its_per_save)
-                file_name = os.path.join(os.path.expanduser(save_path), file_name)
+                file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=rho)
                 f.close()
@@ -634,28 +635,28 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             plane_psi = psi[:, :, int(resol / 2)]
             if (npy):
                 file_name = "plane_#{0}.npy".format((ix + 1) / its_per_save)
-                np.save(os.path.join(os.path.expanduser(save_path), file_name), plane)
+                np.save(os.path.join(os.path.expanduser(loc), file_name), plane)
                 file_name = "plane_psi_#{0}.npy".format((ix + 1) / its_per_save)
-                np.save(os.path.join(os.path.expanduser(save_path), file_name), plane_psi)
+                np.save(os.path.join(os.path.expanduser(loc), file_name), plane_psi)
             if (npz):
                 file_name = "plane_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(save_path), file_name), plane)
+                np.savez(os.path.join(os.path.expanduser(loc), file_name), plane)
             if (hdf5):
                 file_name = "plane_#{0}.hdf5".format((ix + 1) / its_per_save)
-                file_name = os.path.join(os.path.expanduser(save_path), file_name)
+                file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=plane)
                 f.close()
         if (save_options[1] and ((ix + 1) % its_per_save) == 0):
             if (npy):
                 file_name = "psi_#{0}.npy".format((ix + 1) / its_per_save)
-                np.save(os.path.join(os.path.expanduser(save_path), file_name), psi)
+                np.save(os.path.join(os.path.expanduser(loc), file_name), psi)
             if (npz):
                 file_name = "psi_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(save_path), file_name), psi)
+                np.savez(os.path.join(os.path.expanduser(loc), file_name), psi)
             if (hdf5):
                 file_name = "psi_#{0}.hdf5".format((ix + 1) / its_per_save)
-                file_name = os.path.join(os.path.expanduser(save_path), file_name)
+                file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=psi)
                 f.close()
@@ -671,11 +672,11 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             xzplane = rho[:, y_pos, :]
             if (npz):
                 file_name = "xzplane_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(save_path), file_name), xzplane)
+                np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
         if (save_options[5] and ((ix + 1) % its_per_save) == 0):
             line = rho[:, int(resol/2), int(resol / 2)]
             file_name2 = "line_#{0}.npy".format((ix + 1) / its_per_save)
-            np.save(os.path.join(os.path.expanduser(save_path), file_name2), line)
+            np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
 
         # Updating time information for the progress bar at each iteration
         tint = time.time() - tinit
@@ -692,13 +693,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     if (save_options[3]):
         file_name = "egylist.npy"
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), egylist)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), egylist)
         file_name = "egpcmlist.npy"
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), egpcmlist)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), egpcmlist)
         file_name = "egpsilist.npy"
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), egpsilist)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), egpsilist)
         file_name = "ekandqlist.npy"
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), ekandqlist)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
         file_name = "masslist.npy"
-        np.save(os.path.join(os.path.expanduser(save_path), file_name), mtotlist)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), mtotlist)
 
