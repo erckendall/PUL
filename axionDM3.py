@@ -268,8 +268,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     psi = pyfftw.zeros_aligned((resol, resol, resol), dtype='complex128')
     funct = pyfftw.zeros_aligned((resol, resol, resol), dtype='complex128')
     rho = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
-    egy = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
-    massarr = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
     phisp = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
     # Note reduced length of 3rd array dimension given that phi is real so that its Fourier transform is Hermitian
     phik = pyfftw.zeros_aligned((resol, resol, int(resol / 2) + 1), dtype='complex128')
