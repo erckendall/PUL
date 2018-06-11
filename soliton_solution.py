@@ -123,6 +123,13 @@ for i in range(int(rge)):
         r90 = lr[i]
         break
 
+partial = 0.
+for i in range(int(rge)):
+    partial = partial + intlist[i]*4*np.pi*dr
+    if lr[i] >= 0.5*1.38:
+        print ('{}{}'.format('M_core = ', partial))
+        break
+
 
 print ('{}{}'.format('Full width at half maximum density is ', fwhm))
 print ('{}{}'.format('Beta is ', beta))
