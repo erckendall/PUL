@@ -421,31 +421,42 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     file.close()
 
 ########################################################################################################################
+    loc = save_path + '/' + timestamp
 
     if (save_options[3]):
-        egparr = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
-
-        abspsi2 = ne.evaluate('real((abs(psi))**2)')
-        egpcm = ne.evaluate('real((-cmass/distarray)*abspsi2)')
-
-        phisi = ne.evaluate("phisp+(cmass)/distarray")
-        egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
-
-        egparr = abs(egpsi+egpcm)
-
-        funct = fft_psi(psi)
-        funct = ne.evaluate('-karray2*funct')
-        #ifft_calc = pyfftw.builders.ifftn(calc, axes=(0, 1, 2), threads=num_threads)
-        funct = ifft_funct(funct)
-        ekandq = ne.evaluate('real(-0.5*conj(psi)*funct)')
-        egy = ne.evaluate('(egpcm+egpsi+ekandq)')
-
-        massarr = ne.evaluate('real((abs(psi))**2)')
         egylist = []
         egpcmlist = []
         egpsilist = []
         ekandqlist = []
         mtotlist = []
+        egyarr = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
+
+        egyarr = ne.evaluate('real((abs(psi))**2)')
+        egyarr = ne.evaluate('real((-cmass/distarray)*egyarr)')
+        egpcmlist.append(Vcell * np.sum(egyarr))
+        tot = Vcell * np.sum(egyarr)
+
+        egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
+        plane_egp = egyarr[:, :, int(resol / 2)]
+        file_name = "egp_plane_#{0}.npy".format(0)
+        np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
+
+        egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
+        egpsilist.append(Vcell * np.sum(egyarr))
+        tot = tot + Vcell * np.sum(egyarr)
+
+        funct = fft_psi(psi)
+        funct = ne.evaluate('-karray2*funct')
+        #ifft_calc = pyfftw.builders.ifftn(calc, axes=(0, 1, 2), threads=num_threads)
+        funct = ifft_funct(funct)
+        egyarr = ne.evaluate('real(-0.5*conj(psi)*funct)')
+        ekandqlist.append(Vcell * np.sum(egyarr))
+        tot = tot + Vcell * np.sum(egyarr)
+
+        egylist.append(tot)
+
+        egyarr = ne.evaluate('real((abs(psi))**2)')
+        mtotlist.append(Vcell * np.sum(egyarr))
 
 
 #########################################################################################################################
@@ -454,7 +465,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     halfstepornot = 1  # 1 for a half step 0 for a full step
     tenth = float(save_number/10)
 
-    loc = save_path + '/' + timestamp
 
     ###############################
     # HERE I'M ADDING IN THE PRE-LOOP SAVE I.E. INITIAL CONFIG
@@ -515,15 +525,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         if (npz):
             file_name = "xzplane_#{0}.npz".format(0)
             np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
-    if (save_options[3]):
-        egylist.append(Vcell * np.sum(egy))
-        egpcmlist.append(Vcell * np.sum(egpcm))
-        egpsilist.append(Vcell * np.sum(egpsi))
-        ekandqlist.append(Vcell * np.sum(ekandq))
-        mtotlist.append(Vcell * np.sum(massarr))
-        plane_egp = egparr[:, :, int(resol / 2)]
-        file_name = "egp_plane_#{0}.npy".format(0)
-        np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
     if (save_options[5]):
         line = rho[:, int(resol / 2), int(resol / 2)]
         file_name2 = "line_#{0}.npy".format(0)
@@ -566,39 +567,37 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         #############################################################################33
         #Next block calculates the energies, still within the above if statement so only calculates energy at each save, not at each timestep.
             if (save_options[3]):
-                #Gravitational potential energy density associated with the central potential
-                abspsi2 = ne.evaluate('real((abs(psi))**2)')
-                egpcm = ne.evaluate('real((-cmass/distarray)*abspsi2)')
 
-                #Gravitational potential energy density of self-interaction of the condensate
-                phisi = ne.evaluate("phisp+(cmass)/distarray")
-                egpsi = ne.evaluate('real(0.5*phisi*abspsi2)')
-                #egpsi = ne.evaluate('real(phisi*abspsi2)')
+                # Gravitational potential energy density associated with the central potential
+                egyarr = ne.evaluate('real((abs(psi))**2)')
+                egyarr = ne.evaluate('real((-cmass/distarray)*egyarr)')
+                egpcmlist.append(Vcell * np.sum(egyarr))
+                tot = Vcell * np.sum(egyarr)
 
+                egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
                 if ((ix + 1) % its_per_save) == 0:
-                    egparr = abs(egpcm + egpsi)
-                    plane_egp = egparr[:, :, int(resol / 2)]
+                    plane_egp = egyarr[:, :, int(resol / 2)]
                     file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
                     np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
 
-                #Kinetic and Quantum energy densities combined
+                # Gravitational potential energy density of self-interaction of the condensate
+                egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
+                egpsilist.append(Vcell * np.sum(egyarr))
+                tot = tot + Vcell * np.sum(egyarr)
+
                 funct = fft_psi(psi)
                 funct = ne.evaluate('-karray2*funct')
+                # ifft_calc = pyfftw.builders.ifftn(calc, axes=(0, 1, 2), threads=num_threads)
                 funct = ifft_funct(funct)
-                ekandq = ne.evaluate('real(-0.5*conj(psi)*funct)')
+                egyarr = ne.evaluate('real(-0.5*conj(psi)*funct)')
+                ekandqlist.append(Vcell * np.sum(egyarr))
+                tot = tot + Vcell * np.sum(egyarr)
 
-                #Total energy density
-                egy = ne.evaluate('(egpcm+egpsi+ekandq)')
+                egylist.append(tot)
 
-                #Mass density
-                massarr = ne.evaluate('abspsi2')
+                egyarr = ne.evaluate('real((abs(psi))**2)')
+                mtotlist.append(Vcell * np.sum(egyarr))
 
-                #Integrated energies and mass. Since each grid volume is the same, the global multiplication by Vcell is sufficient
-                egylist.append(Vcell*np.sum(egy))
-                egpcmlist.append(Vcell * np.sum(egpcm))
-                egpsilist.append(Vcell * np.sum(egpsi))
-                ekandqlist.append(Vcell * np.sum(ekandq))
-                mtotlist.append(Vcell*np.sum(massarr))
 
 #Uncomment next section if partially complete energy lists desired as simulation runs.
 #In this way, some energy data will be saved even if the simulation is terminated early.
