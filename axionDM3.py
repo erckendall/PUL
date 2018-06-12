@@ -459,6 +459,47 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
 #########################################################################################################################
 #New section to compute angular momentum
+    if (save_options[6]):
+
+        lxlist = []
+        lylist = []
+        lzlist = []
+
+        funct = fft_psi(psi)
+        funct = ne.evaluate('kyarray*funct')
+        funct = ifft_funct(funct)
+        funct = ne.evaluate('zarray*funct')
+        funct2 = fft_psi(psi)
+        funct2 = ne.evaluate('kzarray*funct2')
+        funct2 = ifft_funct(funct2)
+        funct2 = ne.evaluate('yarray*funct2')
+        funct = ne.evaluate('funct2-funct')
+        funct = ne.evaluate('real(conj(psi)*funct)')
+        lxlist.append(Vcell * np.sum(funct))
+
+        funct = fft_psi(psi)
+        funct = ne.evaluate('kzarray*funct')
+        funct = ifft_funct(funct)
+        funct = ne.evaluate('xarray*funct')
+        funct2 = fft_psi(psi)
+        funct2 = ne.evaluate('kxarray*funct2')
+        funct2 = ifft_funct(funct2)
+        funct2 = ne.evaluate('zarray*funct2')
+        funct = ne.evaluate('funct2-funct')
+        funct = ne.evaluate('real(conj(psi)*funct)')
+        lylist.append(Vcell * np.sum(funct))
+
+        funct = fft_psi(psi)
+        funct = ne.evaluate('kxarray*funct')
+        funct = ifft_funct(funct)
+        funct = ne.evaluate('yarray*funct')
+        funct2 = fft_psi(psi)
+        funct2 = ne.evaluate('kyarray*funct2')
+        funct2 = ifft_funct(funct2)
+        funct2 = ne.evaluate('xarray*funct2')
+        funct = ne.evaluate('funct2-funct')
+        funct = ne.evaluate('real(conj(psi)*funct)')
+        lzlist.append(Vcell * np.sum(funct))
 #########################################################################################################################
 
 
@@ -612,7 +653,44 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 #     np.save(os.path.join(os.path.expanduser(loc), file_name), egpsilist)
                 #     file_name = "{}{}".format(label,'ekandq_cumulative.npy')
                 #     np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
+            # Next block calculates the angular momentum, still within the above if statement so only calculates energy at each save, not at each timestep.
+            if (save_options[6]):
 
+                funct = fft_psi(psi)
+                funct = ne.evaluate('kyarray*funct')
+                funct = ifft_funct(funct)
+                funct = ne.evaluate('zarray*funct')
+                funct2 = fft_psi(psi)
+                funct2 = ne.evaluate('kzarray*funct2')
+                funct2 = ifft_funct(funct2)
+                funct2 = ne.evaluate('yarray*funct2')
+                funct = ne.evaluate('funct2-funct')
+                funct = ne.evaluate('real(conj(psi)*funct)')
+                lxlist.append(Vcell * np.sum(funct))
+
+                funct = fft_psi(psi)
+                funct = ne.evaluate('kzarray*funct')
+                funct = ifft_funct(funct)
+                funct = ne.evaluate('xarray*funct')
+                funct2 = fft_psi(psi)
+                funct2 = ne.evaluate('kxarray*funct2')
+                funct2 = ifft_funct(funct2)
+                funct2 = ne.evaluate('zarray*funct2')
+                funct = ne.evaluate('funct2-funct')
+                funct = ne.evaluate('real(conj(psi)*funct)')
+                lylist.append(Vcell * np.sum(funct))
+
+                funct = fft_psi(psi)
+                funct = ne.evaluate('kxarray*funct')
+                funct = ifft_funct(funct)
+                funct = ne.evaluate('yarray*funct')
+                funct2 = fft_psi(psi)
+                funct2 = ne.evaluate('kyarray*funct2')
+                funct2 = ifft_funct(funct2)
+                funct2 = ne.evaluate('xarray*funct2')
+                funct = ne.evaluate('funct2-funct')
+                funct = ne.evaluate('real(conj(psi)*funct)')
+                lzlist.append(Vcell * np.sum(funct))
 
         ################################################################################
 
@@ -701,4 +779,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
         file_name = "masslist.npy"
         np.save(os.path.join(os.path.expanduser(loc), file_name), mtotlist)
+
+    if (save_options[6]):
+        file_name = "lxlist.npy"
+        np.save(os.path.join(os.path.expanduser(loc), file_name), lxlist)
+        file_name = "lylist.npy"
+        np.save(os.path.join(os.path.expanduser(loc), file_name), lylist)
+        file_name = "lzlist.npy"
+        np.save(os.path.join(os.path.expanduser(loc), file_name), lzlist)
+
 
