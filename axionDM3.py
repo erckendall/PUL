@@ -304,10 +304,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     rho = ne.evaluate("real(abs(psi)**2)")
 
-    #The following two lines are for the purposes of labelling the output files. I think this should be changed.
-    m = solitons[0][0]
-    r = solitons[0][1][0]
-
 
     ######## STEP TWO: UPDATE AXION FIELD
 
