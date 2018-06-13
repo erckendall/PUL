@@ -212,7 +212,7 @@ def mass_c(rho, gridlength, resol):
 
 ######################### FUNCTION TO INITIALIZE SOLITONS AND EVOLVE
 
-def evolve(central_mass, num_threads, length, length_units, resol, duration, duration_units, save_number, save_options,
+def evolve(central_mass, num_threads, length, length_units, resol, duration, duration_units, step_factor, save_number, save_options,
            save_path, npz, npy, hdf5, s_mass_unit, s_position_unit, s_velocity_unit, solitons, start_time):
     print ('Initialising...')
 
@@ -327,6 +327,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     min_num_steps = t / delta_t
     min_num_steps_int = int(min_num_steps + 1)
+    min_num_steps_int = int(min_num_steps_int/step_factor)
 
     if save_number >= min_num_steps_int:
         actual_num_steps = save_number
