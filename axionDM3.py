@@ -654,6 +654,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 #     file_name = "{}{}".format(label,'ekandq_cumulative.npy')
                 #     np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
             # Next block calculates the angular momentum, still within the above if statement so only calculates energy at each save, not at each timestep.
+            #Note that angular momentum is not conserved under PBCs, so this will vary as material reaches grid boundaries.
             if (save_options[6]):
 
                 funct = fft_psi(psi)
