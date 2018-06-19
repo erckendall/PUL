@@ -398,7 +398,7 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
 
 ######################### FUNCTION TO INITIALIZE SOLITONS AND EVOLVE
 
-def evolve(central_mass, num_threads, length, length_units, resol, duration, duration_units, save_number, save_options,
+def evolve(central_mass, num_threads, length, length_units, resol, duration, duration_units, step_factor, save_number, save_options,
            save_path, npz, npy, hdf5, s_mass_unit, s_position_unit, s_velocity_unit, solitons, start_time):
     print ('Initialising...')
 
@@ -495,11 +495,8 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     #differencing rather than bi-directional, which is not avaiable at the edge.
 
         psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
-        counter =
-
-
-
-
+        counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
+        total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
 
 
 ######################################################################################################################
@@ -528,6 +525,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     min_num_steps = t / delta_t
     min_num_steps_int = int(min_num_steps + 1)
+    min_num_steps_int = int(min_num_steps_int/step_factor)
 
     if save_number >= min_num_steps_int:
         actual_num_steps = save_number
@@ -806,6 +804,18 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             rho = ne.evaluate("real(abs(psi)**2)")
             halfstepornot = 1
 
+        ######################################################################################################################
+        # Adding section to set outer grid layer to zero. When calculating the velocity at this outer layer, it is
+        # assumed that velocity is sufficiently slowly varying that gradients can be calculated using unidirectional
+        # differencing rather than bi-directional, which is not avaiable at the edge.
+
+        psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
+        counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
+        total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
+
+        ######################################################################################################################
+
+
         #############################################################################33
         #Next block calculates the energies, still within the above if statement so only calculates energy at each save, not at each timestep.
             if (save_options[3]):
@@ -969,6 +979,10 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     print("Complete.")
     if warn == 1:
         print("WARNING: Significant overlap between solitons in initial conditions")
+
+    average = total / counter
+    file_name = "velocity_check.npy"
+    np.save(os.path.join(os.path.expanduser(loc), file_name), average)
 
     if (save_options[3]):
         file_name = "egylist.npy"
