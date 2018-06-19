@@ -210,6 +210,192 @@ def mass_c(rho, gridlength, resol):
     return m
 
 
+######################################################################################################################
+# Adding section to set outer grid layer to zero. When calculating the velocity at this outer layer, it is
+# assumed that velocity is sufficiently slowly varying that gradients can be calculated using unidirectional
+# differencing rather than bi-directional, which is not avaiable at the edge.
+
+
+def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
+    for i in np.arange(resol):
+        for j in np.arange(resol):
+            #Note I'm allowing for machine error up to 5 d.p. if psi = 0 to 5 d.p. then assume any deviation due to
+            # numerical error and don't calculate velocity as phase may be unreliable. This also means that
+            #psi won't be set to exactly zero in this routine but this is ok since it's negligible anyway.
+            if np.around(psi[i,j,0], 5) != 0 and np.around(psi[i,j,1], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[i,j,0]) < 0  and np.angle(psi[i,j,1]) > 0:
+                    if abs(np.angle(psi[i,j,0])) + abs(np.angle(psi[i,j,1])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,j,0])) - np.angle(np.angle(psi[i,j,1])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[i, j, 0])) - np.angle(np.angle(psi[i, j, 1]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[i, j, 0]) > 0 and np.angle(psi[i, j, 1]) < 0:
+                    if abs(np.angle(psi[i,j,0])) + abs(np.angle(psi[i,j,1])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,j,0])) - np.angle(np.angle(psi[i,j,1])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[i, j, 0])) - np.angle(np.angle(psi[i, j, 1]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[i,j,0])) - np.angle(np.angle(psi[i,j,1])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[i,j,0]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,j,0]))
+                total = total + vel_rat
+                psi[i,j,0] = 0
+
+            if np.around(psi[i,j,resol - 1], 5) != 0 and np.around(psi[i,j, resol - 2], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[i,j,resol - 1]) < 0  and np.angle(psi[i,j,resol - 2]) > 0:
+                    if abs(np.angle(psi[i,j,resol - 1])) + abs(np.angle(psi[i,j,resol -2])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,j,resol - 1])) - np.angle(np.angle(psi[i,j,resol - 2])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[i, j, resol - 1])) - np.angle(np.angle(psi[i, j, resol - 2]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[i, j, resol - 1]) > 0 and np.angle(psi[i, j, resol - 2]) < 0:
+                    if abs(np.angle(psi[i,j,resol - 1])) + abs(np.angle(psi[i,j,resol - 2])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,j,resol - 1])) - np.angle(np.angle(psi[i,j,resol - 2])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[i, j, resol - 1])) - np.angle(np.angle(psi[i, j, resol - 2]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[i,j,resol - 1])) - np.angle(np.angle(psi[i,j,resol - 2])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[i,j,resol -1]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,j,resol - 1]))
+                total = total + vel_rat
+                psi[i, j, resol - 1] = 0
+
+
+    ####################################
+    for i in np.arange(resol):
+        for k in np.arange(resol):
+            if np.around(psi[i,0,k], 5) != 0 and np.around(psi[i,1,k], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[i,0,k]) < 0  and np.angle(psi[i,1,k]) > 0:
+                    if abs(np.angle(psi[i,0,k])) + abs(np.angle(psi[i,1,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[i,0,k]) > 0 and np.angle(psi[i,1,k]) < 0:
+                    if abs(np.angle(psi[i,0,k])) + abs(np.angle(psi[i,1,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[i,0,k]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,0,k]))
+                total = total + vel_rat
+                psi[i,0,k] = 0
+
+            if np.around(psi[i,resol - 1,k], 5) != 0 and np.around(psi[i,resol - 2,k], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[i,resol - 1,k]) < 0  and np.angle(psi[i,resol - 2,k]) > 0:
+                    if abs(np.angle(psi[i,resol - 1,k])) + abs(np.angle(psi[i,resol - 2,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[i,resol - 1,k]) > 0 and np.angle(psi[i,resol - 2,k]) < 0:
+                    if abs(np.angle(psi[i,resol - 1,k])) + abs(np.angle(psi[i,resol - 2,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[i,resol - 1,k]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,resol - 1,k]))
+                total = total + vel_rat
+                psi[i,resol - 1,k] = 0
+                ################################
+
+    ####################################
+    for j in np.arange(resol):
+        for k in np.arange(resol):
+            if np.around(psi[0,j,k], 5) != 0 and np.around(psi[1,j,k], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[0,j,k]) < 0  and np.angle(psi[1,j,k]) > 0:
+                    if abs(np.angle(psi[0,j,k])) + abs(np.angle(psi[1,j,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[0,j,k]) > 0 and np.angle(psi[1,j,k]) < 0:
+                    if abs(np.angle(psi[0,j,k])) + abs(np.angle(psi[1,j,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[0,j,k]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[0,j,k]))
+                total = total + vel_rat
+                psi[0,j,k] = 0
+
+            if np.around(psi[resol - 1,j,k], 5) != 0 and np.around(psi[resol - 2,j,k], 5) != 0:
+                counter = counter + 1
+                if np.angle(psi[resol - 1,j,k]) < 0  and np.angle(psi[resol - 1,j,k]) > 0:
+                    if abs(np.angle(psi[resol - 1,j,k])) + abs(np.angle(psi[resol - 2,j,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (2*np.pi + np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k]))) / (
+                                    gridlength / float(resol))
+                elif np.angle(psi[resol - 1,j,k]) > 0 and np.angle(psi[resol - 2,j,k]) < 0:
+                    if abs(np.angle(psi[resol - 1,j,k])) + abs(np.angle(psi[resol - 2,j,k])) < np.pi:
+                        vel_out = (np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k])))/(gridlength/float(resol))
+                    else:
+                        vel_out = (-2*np.pi + np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k]))) / (
+                                    gridlength / float(resol))
+                else:
+                    vel_out = (np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k])))/(gridlength/float(resol))
+            m_in = 0
+            for a in np.arange(resol):
+                for b in np.arange(resol):
+                    for c in np.arange(resol):
+                        if distarray[a,b,c] < distarray[resol - 1,j,k]:
+                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[resol - 1,j,k]))
+                total = total + vel_rat
+                psi[resol - 1,j,k] = 0
+                ################################
+
+
+
+    return psi, total, counter
+
+
+######################################################################################################################
+
+
+
 ######################### FUNCTION TO INITIALIZE SOLITONS AND EVOLVE
 
 def evolve(central_mass, num_threads, length, length_units, resol, duration, duration_units, save_number, save_options,
@@ -300,13 +486,28 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             "exp(1j*(alpha*beta*t0 + velx*xarray + vely*yarray + velz*zarray -0.5*(velx*velx+vely*vely+velz*velz)*t0  + phase))*funct")
 
         psi = ne.evaluate("psi + funct")
+        counter = 0
+        total = 0
+
+######################################################################################################################
+    #Adding section to set outer grid layer to zero. When calculating the velocity at this outer layer, it is
+    #assumed that velocity is sufficiently slowly varying that gradients can be calculated using unidirectional
+    #differencing rather than bi-directional, which is not avaiable at the edge.
+
+        psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
+        counter =
+
+
+
+
+
+
+######################################################################################################################
+
+
 
 
     rho = ne.evaluate("real(abs(psi)**2)")
-
-    #The following two lines are for the purposes of labelling the output files. I think this should be changed.
-    m = solitons[0][0]
-    r = solitons[0][1][0]
 
 
     ######## STEP TWO: UPDATE AXION FIELD
