@@ -421,11 +421,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         egpcmlist.append(Vcell * np.sum(egyarr))
         tot = Vcell * np.sum(egyarr)
 
-        egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
-        plane_egp = egyarr[:, :, int(resol / 2)]
-        file_name = "egp_plane_#{0}.npy".format(0)
-        np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
-
         egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
         egpsilist.append(Vcell * np.sum(egyarr))
         tot = tot + Vcell * np.sum(egyarr)
@@ -544,12 +539,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 egpcmlist.append(Vcell * np.sum(egyarr))
                 tot = Vcell * np.sum(egyarr)
 
-                egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
-                if ((ix + 1) % its_per_save) == 0:
-                    plane_egp = egyarr[:, :, int(resol / 2)]
-                    file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
-                    np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
-
                 # Gravitational potential energy density of self-interaction of the condensate
                 egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
                 egpsilist.append(Vcell * np.sum(egyarr))
@@ -588,13 +577,13 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
         if (save_options[0] and ((ix + 1) % its_per_save) == 0):
             if (npy):
-                file_name = "rho_#{0}.npy".format((ix + 1) / its_per_save)
+                file_name = "rho_#{0}.npy".format(int((ix + 1) / its_per_save))
                 np.save(os.path.join(os.path.expanduser(loc), file_name), rho)
             if (npz):
-                file_name = "rho_#{0}.npz".format((ix + 1) / its_per_save)
+                file_name = "rho_#{0}.npz".format(int((ix + 1) / its_per_save))
                 np.savez(os.path.join(os.path.expanduser(loc), file_name), rho)
             if (hdf5):
-                file_name = "rho_#{0}.hdf5".format((ix + 1) / its_per_save)
+                file_name = "rho_#{0}.hdf5".format(int((ix + 1) / its_per_save))
                 file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=rho)
@@ -603,35 +592,35 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             plane = rho[:, :, int(resol / 2)]
             plane_psi = psi[:, :, int(resol / 2)]
             if (npy):
-                file_name = "plane_#{0}.npy".format((ix + 1) / its_per_save)
+                file_name = "plane_#{0}.npy".format(int((ix + 1) / its_per_save))
                 np.save(os.path.join(os.path.expanduser(loc), file_name), plane)
-                file_name = "plane_psi_#{0}.npy".format((ix + 1) / its_per_save)
+                file_name = "plane_psi_#{0}.npy".format(int((ix + 1) / its_per_save))
                 np.save(os.path.join(os.path.expanduser(loc), file_name), plane_psi)
             if (npz):
-                file_name = "plane_#{0}.npz".format((ix + 1) / its_per_save)
+                file_name = "plane_#{0}.npz".format(int((ix + 1) / its_per_save))
                 np.savez(os.path.join(os.path.expanduser(loc), file_name), plane)
             if (hdf5):
-                file_name = "plane_#{0}.hdf5".format((ix + 1) / its_per_save)
+                file_name = "plane_#{0}.hdf5".format(int((ix + 1) / its_per_save))
                 file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=plane)
                 f.close()
         if (save_options[1] and ((ix + 1) % its_per_save) == 0):
             if (npy):
-                file_name = "psi_#{0}.npy".format((ix + 1) / its_per_save)
+                file_name = "psi_#{0}.npy".format(int((ix + 1) / its_per_save))
                 np.save(os.path.join(os.path.expanduser(loc), file_name), psi)
             if (npz):
-                file_name = "psi_#{0}.npz".format((ix + 1) / its_per_save)
+                file_name = "psi_#{0}.npz".format(int((ix + 1) / its_per_save))
                 np.savez(os.path.join(os.path.expanduser(loc), file_name), psi)
             if (hdf5):
-                file_name = "psi_#{0}.hdf5".format((ix + 1) / its_per_save)
+                file_name = "psi_#{0}.hdf5".format(int((ix + 1) / its_per_save))
                 file_name = os.path.join(os.path.expanduser(loc), file_name)
                 f = h5py.File(file_name, 'w')
                 dset = f.create_dataset("init", data=psi)
                 f.close()
         if (save_options[4] and ((ix + 1) % its_per_save) == 0):
             line = rho[:, int(resol/2), int(resol / 2)]
-            file_name2 = "line_#{0}.npy".format((ix + 1) / its_per_save)
+            file_name2 = "line_#{0}.npy".format(int((ix + 1) / its_per_save))
             np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
 
 
