@@ -238,13 +238,14 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[i,j,0])) - np.angle(np.angle(psi[i,j,1])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[i,j,0]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,j,0]))
+
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[i,j,0]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / distarray[i,j,0])
                 total = total + vel_rat
                 psi[i,j,0] = 0
 
@@ -264,13 +265,13 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[i,j,resol - 1])) - np.angle(np.angle(psi[i,j,resol - 2])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[i,j,resol -1]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,j,resol - 1]))
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[i,j,resol -1]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / distarray[i,j,resol - 1])
                 total = total + vel_rat
                 psi[i, j, resol - 1] = 0
 
@@ -294,13 +295,13 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[i,0,k])) - np.angle(np.angle(psi[i,1,k])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[i,0,k]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,0,k]))
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[i,0,k]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / distarray[i,0,k])
                 total = total + vel_rat
                 psi[i,0,k] = 0
 
@@ -320,13 +321,13 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[i,resol - 1,k])) - np.angle(np.angle(psi[i,resol - 2,k])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[i,resol - 1,k]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[i,resol - 1,k]))
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[i,resol - 1,k]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / distarray[i,resol - 1,k])
                 total = total + vel_rat
                 psi[i,resol - 1,k] = 0
                 ################################
@@ -350,13 +351,13 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[0,j,k])) - np.angle(np.angle(psi[1,j,k])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[0,j,k]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[0,j,k]))
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[0,j,k]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * float(m_in) / distarray[0,j,k])
                 total = total + vel_rat
                 psi[0,j,k] = 0
 
@@ -376,13 +377,13 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
                                     gridlength / float(resol))
                 else:
                     vel_out = (np.angle(np.angle(psi[resol - 1,j,k])) - np.angle(np.angle(psi[resol - 2,j,k])))/(gridlength/float(resol))
-            m_in = 0
-            for a in np.arange(resol):
-                for b in np.arange(resol):
-                    for c in np.arange(resol):
-                        if distarray[a,b,c] < distarray[resol - 1,j,k]:
-                            m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
-                vel_rat = vel_out / np.sqrt(2 * m_in / np.sqrt(distarray[resol - 1,j,k]))
+                m_in = 0
+                for a in np.arange(resol):
+                    for b in np.arange(resol):
+                        for c in np.arange(resol):
+                            if distarray[a,b,c] < distarray[resol - 1,j,k]:
+                                m_in = m_in + Vcell*(abs(psi[a,b,c]))**2
+                vel_rat = vel_out / np.sqrt(2 * m_in / distarray[resol - 1,j,k])
                 total = total + vel_rat
                 psi[resol - 1,j,k] = 0
                 ################################
@@ -390,6 +391,47 @@ def edges(psi, distarray, Vcell, gridlength, resol, total, counter):
 
 
     return psi, total, counter
+
+
+######################################################################################################################
+
+######################################################################################################################
+#Simplified edges function which does not calculate velocities
+
+
+def edges_simp(psi, resol):
+
+    ####################################
+    for i in np.arange(resol):
+        for j in np.arange(resol):
+            if np.around(psi[i,j,0], 5) != 0 and np.around(psi[i,j,1], 5) != 0:
+                psi[i,j,0] = 0
+
+            if np.around(psi[i,j,resol - 1], 5) != 0 and np.around(psi[i,j, resol - 2], 5) != 0:
+                psi[i, j, resol - 1] = 0
+                ################################
+
+    ####################################
+    for i in np.arange(resol):
+        for k in np.arange(resol):
+            if np.around(psi[i,0,k], 5) != 0 and np.around(psi[i,1,k], 5) != 0:
+                psi[i,0,k] = 0
+
+            if np.around(psi[i,resol - 1,k], 5) != 0 and np.around(psi[i,resol - 2,k], 5) != 0:
+                psi[i,resol - 1,k] = 0
+                ################################
+
+    ####################################
+    for j in np.arange(resol):
+        for k in np.arange(resol):
+            if np.around(psi[0,j,k], 5) != 0 and np.around(psi[1,j,k], 5) != 0:
+                psi[0,j,k] = 0
+
+            if np.around(psi[resol - 1,j,k], 5) != 0 and np.around(psi[resol - 2,j,k], 5) != 0:
+                psi[resol - 1,j,k] = 0
+                ################################
+
+    return psi
 
 
 ######################################################################################################################
@@ -488,15 +530,17 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         psi = ne.evaluate("psi + funct")
         counter = 0
         total = 0
+        Vcell = (gridlength / float(resol)) ** 3
 
 ######################################################################################################################
     #Adding section to set outer grid layer to zero. When calculating the velocity at this outer layer, it is
     #assumed that velocity is sufficiently slowly varying that gradients can be calculated using unidirectional
     #differencing rather than bi-directional, which is not avaiable at the edge.
 
-        psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
-        counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
-        total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
+        psi = edges_simp(psi, resol)
+        # psi = edges_simp(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
+        # counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
+        # total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
 
 
 ######################################################################################################################
@@ -572,7 +616,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     phisp = irfft_phi(phik)
     phisp = ne.evaluate("phisp-(cmass)/distarray")
 
-    Vcell = (gridlength / float(resol)) ** 3
 
 ########################################################################################################################
 #CREATE THE TIMESTAMPED SAVE DIRECTORY AND CONFIG.TXT FILE
@@ -798,23 +841,22 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         phisp = irfft_phi(phik)
         phisp = ne.evaluate("phisp-(cmass)/distarray")
 
+        if (((ix + 1) % its_per_save) <> 0):
+            psi = edges_simp(psi, resol)
+            # psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
+            # counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
+            # total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
+
         #Next if statement ensures that an extra half step is performed at each save point
-        if (((ix + 1) % its_per_save) == 0):
+        elif (((ix + 1) % its_per_save) == 0):
             psi = ne.evaluate("exp(-1j*0.5*h*phisp)*psi")
             rho = ne.evaluate("real(abs(psi)**2)")
             halfstepornot = 1
 
-        ######################################################################################################################
-        # Adding section to set outer grid layer to zero. When calculating the velocity at this outer layer, it is
-        # assumed that velocity is sufficiently slowly varying that gradients can be calculated using unidirectional
-        # differencing rather than bi-directional, which is not avaiable at the edge.
-
-        psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
-        counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
-        total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
-
-        ######################################################################################################################
-
+            psi = edges_simp(psi, resol)
+            # psi = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[0]
+            # counter = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[1]
+            # total = edges(psi, distarray, Vcell, gridlength, resol, total, counter)[2]
 
         #############################################################################33
         #Next block calculates the energies, still within the above if statement so only calculates energy at each save, not at each timestep.
@@ -980,9 +1022,9 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     if warn == 1:
         print("WARNING: Significant overlap between solitons in initial conditions")
 
-    average = total / counter
-    file_name = "velocity_check.npy"
-    np.save(os.path.join(os.path.expanduser(loc), file_name), average)
+    # average = total / counter
+    # file_name = "velocity_check.npy"
+    # np.save(os.path.join(os.path.expanduser(loc), file_name), average)
 
     if (save_options[3]):
         file_name = "egylist.npy"
