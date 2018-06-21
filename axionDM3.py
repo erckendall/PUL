@@ -22,7 +22,8 @@ time_unit = (3 * H_0 ** 2 * omega_m0 / (8 * np.pi)) ** -0.5
 mass_unit = (3 * H_0 ** 2 * omega_m0 / (8 * np.pi)) ** 0.25 * hbar ** 1.5 / (axion_mass ** 1.5 * G)
 
 
-####################### NEW FUNCTION TO GENERATE PROGRESS BAR
+
+####################### FUNCTION TO GENERATE PROGRESS BAR
 
 def prog_bar(iteration_number, progress, tinterval):
     size = 50
@@ -36,6 +37,7 @@ def prog_bar(iteration_number, progress, tinterval):
         status, ' The previous step took ', tinterval, ' seconds.')
     sys.stdout.write(text)
     sys.stdout.flush()
+
 
 
 ####################### FUNCTION TO CONVERT TO DIMENSIONLESS UNITS
@@ -104,6 +106,7 @@ def convert(value, unit, type):
     return converted
 
 
+
 ####################### FUNCTION TO CONVERT FROM DIMENSIONLESS UNITS TO DESIRED UNITS
 
 def convert_back(value, unit, type):
@@ -170,6 +173,7 @@ def convert_back(value, unit, type):
     return converted
 
 
+
 ########################FUNCTION TO CHECK FOR SOLITON OVERLAP
 
 def overlap_check(candidate, soliton):
@@ -185,14 +189,15 @@ def overlap_check(candidate, soliton):
     return True
 
 
-############################FUNCTION TO PUT SPHERICAL SOLITON DENSITY PROFILE INTO 3D BOX
+
+############################FUNCTION TO PUT SPHERICAL SOLITON DENSITY PROFILE INTO 3D BOX (Uses pre-computed array)
 
 def initsoliton(funct, xarray, yarray, zarray, position, alpha, f, delta_x):
     for index in np.ndindex(funct.shape):
         # Note also that this distfromcentre is here to calculate the distance of every gridpoint from the centre of the soliton, not to calculate the distance of the soliton from the centre of the grid
         distfromcentre = ((xarray[index[0], 0, 0] - position[0]) ** 2 + (yarray[0, index[1], 0] - position[1]) ** 2 + (
         zarray[0, 0, index[2]] - position[2]) ** 2) ** 0.5
-        # (Em) I think the next line is suggestive of his soliton profile file only being valid out to dimensionless radius 9, after which it is approximated to be identically zero. My profiles may be slightly more accurate. Consider implementing warning when position of soliton too close to the edge of the box.
+        # Utilises soliton profile array out to dimensionless radius 5.6.
         if (np.sqrt(alpha) * distfromcentre <= 5.6):
             funct[index] = alpha * f[int(np.sqrt(alpha) * (distfromcentre / delta_x + 1))]
 
@@ -200,14 +205,6 @@ def initsoliton(funct, xarray, yarray, zarray, position, alpha, f, delta_x):
             funct[index] = 0
     return funct
 
-
-####################### FUNCTION TO CALCULATE TOTAL MASS FROM DENSITY FIELD
-
-def mass_c(rho, gridlength, resol):
-    d_V = (gridlength / float(resol)) ** 3
-    # (Em) This seems to suggest that there are resol units in each dimension, but if there are resol data points, then this only corresponds to resol-1 units, i.e. 128 cubed in terms of data points corresponds to 127 cubed distinct spatial regions
-    m = np.ndarray.sum(rho) * d_V
-    return m
 
 
 ######################### FUNCTION TO INITIALIZE SOLITONS AND EVOLVE
@@ -217,24 +214,77 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     print ('Initialising...')
 
 
-    ######## STEP ONE: SET UP INITIAL CONDITIONS
-    # Parse length unit
-    ne.set_num_threads(num_threads)
-    gridlength = 0
-    initsoliton_jit = numba.jit(initsoliton)
-
-    # start_time = 0.0
+    ##########################################################################################
+    #SET INITIAL CONDITIONS
 
     if (length_units == ''):
         gridlength = length
     else:
         gridlength = convert(length, length_units, 'l')
+    if (duration_units == ''):
+        t = duration
+    else:
+        t = convert(duration, duration_units, 't')
+    if (duration_units == ''):
+        t0 = start_time
+    else:
+        t0 = convert(start_time, duration_units, 't')
+    if (s_mass_unit == ''):
+        cmass = central_mass
+    else:
+        cmass = convert(central_mass, s_mass_unit, 'm')
 
-        ## Set up the x,y,z coordinates of the grid
-        # (Em) calculate the coordinate points on the grid
-    # gridvec=np.linspace(-gridlength/2.0,gridlength/2.0,resol)
-    gridvec = np.linspace(-gridlength / 2.0 + gridlength / float(2 * resol),
-                          gridlength / 2.0 - gridlength / float(2 * resol), resol)
+    Vcell = (gridlength / float(resol)) ** 3
+
+    ne.set_num_threads(num_threads)
+
+    initsoliton_jit = numba.jit(initsoliton)
+
+
+    ##########################################################################################
+    # CREATE THE TIMESTAMPED SAVE DIRECTORY AND CONFIG.TXT FILE
+
+    save_path = os.path.expanduser(save_path)
+    tm = time.localtime()
+
+    talt = ['0', '0', '0']
+    for i in range(3, 6):
+        if tm[i] in range(0, 10):
+            talt[i - 3] = '{}{}'.format('0', tm[i])
+        else:
+            talt[i - 3] = tm[i]
+    timestamp = '{}{}{}{}{}{}{}{}{}{}{}{}{}'.format(tm[0], '.', tm[1], '.', tm[2], '_', talt[0], ':', talt[1], ':', talt[2], '_', resol)
+    file = open('{}{}{}'.format('./', save_path, '/timestamp.txt'), "w+")
+    file.write(timestamp)
+    os.makedirs('{}{}{}{}'.format('./', save_path, '/', timestamp))
+    file = open('{}{}{}{}{}'.format('./', save_path, '/', timestamp, '/config.txt'), "w+")
+    file.write(('{}{}'.format('resol = ', resol)))
+    file.write('\n')
+    file.write(('{}{}'.format('axion_mass (kg) = ', axion_mass)))
+    file.write('\n')
+    file.write(('{}{}'.format('length (code units) = ', gridlength)))
+    file.write('\n')
+    file.write(('{}{}'.format('duration (code units) = ', t)))
+    file.write('\n')
+    file.write(('{}{}'.format('start_time (code units) = ', t0)))
+    file.write('\n')
+    file.write(('{}{}'.format('central_mass (code units) = ', cmass)))
+    file.write('\n\n')
+    file.write(('{}'.format('solitons ([mass, [x, y, z], [vx, vy, vz], phase]): \n')))
+    for s in range(len(solitons)):
+        file.write(('{}{}{}{}{}'.format('soliton', s, ' = ', solitons[s], '\n')))
+    file.write(('{}{}{}{}{}{}'.format('\ns_mass_unit = ', s_mass_unit, ', s_position_unit = ', s_position_unit, ', s_velocity_unit = ', s_velocity_unit)))
+    file.write('\n\nNote: If the above units are blank, this means that the soliton parameters were specified in code units')
+    file.close()
+
+    loc = save_path + '/' + timestamp
+
+
+
+    ##########################################################################################
+    # SET UP THE REAL SPACE COORDINATES OF THE GRID
+
+    gridvec = np.linspace(-gridlength / 2.0 + gridlength / float(2 * resol), gridlength / 2.0 - gridlength / float(2 * resol), resol)
 
     xarray = np.ones((resol, 1, 1))
     yarray = np.ones((1, resol, 1))
@@ -243,10 +293,14 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     xarray[:, 0, 0] = gridvec
     yarray[0, :, 0] = gridvec
     zarray[0, 0, :] = gridvec
-    # (Em) Calculate the radius to be assigned to each point on the grid - this is an array of radial coordinates
-    distarray = ne.evaluate("(xarray**2+yarray**2+zarray**2)**0.5")
 
-    # Set up the k-space coordinates for the split-step Fourier calculations (NOT the phi calculations)
+    distarray = ne.evaluate("(xarray**2+yarray**2+zarray**2)**0.5") # Radial coordinates
+
+
+
+    ##########################################################################################
+    # SET UP K-SPACE COORDINATES FOR COMPLEX DFT (NOT RHO DFT)
+
     kvec = 2 * np.pi * np.fft.fftfreq(resol, gridlength / float(resol))
     kxarray = np.ones((resol, 1, 1))
     kyarray = np.ones((1, resol, 1))
@@ -255,22 +309,21 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     kyarray[0, :, 0] = kvec
     kzarray[0, 0, :] = kvec
     karray2 = ne.evaluate("kxarray**2+kyarray**2+kzarray**2")
-    # karray2[0,0,0]=1 #to avoid awkward, divide by zero error, this is the zero mode
 
-    # Initialize each soliton with specified mass, position and velocity
+
+
+    ##########################################################################################
+    # INITIALISE SOLITONS WITH SPECIFIED MASS, POSITION, VELOCITY, PHASE
 
     f = np.load('./Soliton Profile Files/initial_f.npy')
 
-    # delta_x needs to be set to match the resolution of the soliton profile file.
-    delta_x = 0.00001
+    delta_x = 0.00001 # Needs to match resolution of soliton profile array file. Default = 0.00001
 
     warn = 0
+
     psi = pyfftw.zeros_aligned((resol, resol, resol), dtype='complex128')
     funct = pyfftw.zeros_aligned((resol, resol, resol), dtype='complex128')
-    rho = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
-    phisp = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
-    # Note reduced length of 3rd array dimension given that phi is real so that its Fourier transform is Hermitian
-    phik = pyfftw.zeros_aligned((resol, resol, int(resol / 2) + 1), dtype='complex128')
+
     for k in range(len(solitons)):
         if (k != 0):
             if (not overlap_check(solitons[k], solitons[:k])):
@@ -282,42 +335,27 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         mass = convert(s[0], s_mass_unit, 'm')
         position = convert(np.array(s[1]), s_position_unit, 'l')
         velocity = convert(np.array(s[2]), s_velocity_unit, 'v')
+        # Note that alpha and beta parameters are computed when the initial_f.npy soliton profile file is generated.
         alpha = (mass / 3.883) ** 2
         beta = 2.454
         phase = s[3]
-
         funct = initsoliton_jit(funct, xarray, yarray, zarray, position, alpha, f, delta_x)
+        ####### Impart velocity to solitons in Galilean invariant way
         velx = velocity[0]
         vely = velocity[1]
         velz = velocity[2]
-
-        if (duration_units == ''):
-            t0 = start_time
-        else:
-            t0 = convert(start_time, duration_units, 't')
-
-        funct = ne.evaluate(
-            "exp(1j*(alpha*beta*t0 + velx*xarray + vely*yarray + velz*zarray -0.5*(velx*velx+vely*vely+velz*velz)*t0  + phase))*funct")
-
+        funct = ne.evaluate("exp(1j*(alpha*beta*t0 + velx*xarray + vely*yarray + velz*zarray -0.5*(velx*velx+vely*vely+velz*velz)*t0  + phase))*funct")
         psi = ne.evaluate("psi + funct")
-
 
     rho = ne.evaluate("real(abs(psi)**2)")
 
-
-    ######## STEP TWO: UPDATE AXION FIELD
-
-    # Parse duration unit
-    # t = 0.0
-
-    if (duration_units == ''):
-        t = duration
-    else:
-        t = convert(duration, duration_units, 't')
+    fft_psi = pyfftw.builders.fftn(psi, axes=(0, 1, 2), threads=num_threads)
+    ifft_funct = pyfftw.builders.ifftn(funct, axes=(0, 1, 2), threads=num_threads)
 
 
-    # delta_t = 8 * (axion_mass / (6 * hbar)) * (convert_back(gridlength, 'm', 'l') / float(resol)) ** 2
-    # delta_t = convert(delta_t, 's', 't')
+
+    ##########################################################################################
+    # COMPUTE SIZE OF TIMESTEP (CAN BE INCREASED WITH step_factor)
 
     delta_t = (gridlength/float(resol))**2/np.pi
 
@@ -335,13 +373,11 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
     h = t / float(actual_num_steps)
 
-    save_path = os.path.expanduser(save_path)
 
-    fft_psi = pyfftw.builders.fftn(psi, axes=(0, 1, 2), threads=num_threads)
-    funct = fft_psi(psi)
-    ifft_funct = pyfftw.builders.ifftn(funct, axes=(0, 1, 2), threads=num_threads)
-    # fft the density field, divide by k^2, fft back and that is phi
-    # Set up special k space to be used for calculating phi (note difference in kz because rhospace is real)
+
+    ##########################################################################################
+    # SETUP K-SPACE FOR RHO (REAL)
+
     rkvec = 2 * np.pi * np.fft.fftfreq(resol, gridlength / float(resol))
     krealvec = 2 * np.pi * np.fft.rfftfreq(resol, gridlength / float(resol))
     rkxarray = np.ones((resol, 1, 1))
@@ -351,8 +387,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     rkyarray[0, :, 0] = rkvec
     rkzarray[0, 0, :] = krealvec
     rkarray2 = ne.evaluate("rkxarray**2+rkyarray**2+rkzarray**2")
-    # rkarray2[0,0,0]=1 #to avoid awkward, divide by zero error, this is the zero mode
-
 
     rfft_rho = pyfftw.builders.rfftn(rho, axes=(0, 1, 2), threads=num_threads)
     phik = rfft_rho(rho)  # not actually phik but phik is defined in next line
@@ -360,63 +394,19 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     phik[0, 0, 0] = 0
     irfft_phi = pyfftw.builders.irfftn(phik, axes=(0, 1, 2), threads=num_threads)
 
-    stability = np.zeros(save_number + 1)
 
-    if (s_mass_unit == ''):
-        cmass = central_mass
-    else:
-        cmass = convert(central_mass, s_mass_unit, 'm')
 
+    ##########################################################################################
+    # COMPUTE INTIAL VALUE OF POTENTIAL
+
+    phisp = pyfftw.zeros_aligned((resol, resol, resol), dtype='float64')
     phisp = irfft_phi(phik)
     phisp = ne.evaluate("phisp-(cmass)/distarray")
 
-    Vcell = (gridlength / float(resol)) ** 3
-
-########################################################################################################################
-#CREATE THE TIMESTAMPED SAVE DIRECTORY AND CONFIG.TXT FILE
-
-    tm = time.localtime()
-
-    talt = ['0', '0', '0']
-    for i in range(3, 6):
-        if tm[i] in range(0, 10):
-            talt[i - 3] = '{}{}'.format('0', tm[i])
-        else:
-            talt[i - 3] = tm[i]
-    timestamp = '{}{}{}{}{}{}{}{}{}{}{}{}{}'.format(tm[0], '.', tm[1], '.', tm[2], '_', talt[0], ':', talt[1], ':',
-                                                    talt[2], '_', resol)
 
 
-    file = open('{}{}{}'.format('./', save_path, '/timestamp.txt'), "w+")
-    file.write(timestamp)
-
-    os.makedirs('{}{}{}{}'.format('./', save_path, '/', timestamp))
-
-    file = open('{}{}{}{}{}'.format('./', save_path, '/', timestamp, '/config.txt'), "w+")
-
-    file.write(('{}{}'.format('resol = ', resol)))
-    file.write('\n')
-    file.write(('{}{}'.format('axion_mass (kg) = ', axion_mass)))
-    file.write('\n')
-    file.write(('{}{}'.format('length (code units) = ', gridlength)))
-    file.write('\n')
-    file.write(('{}{}'.format('duration (code units) = ', t)))
-    file.write('\n')
-    file.write(('{}{}'.format('start_time (code units) = ', t0)))
-    file.write('\n')
-    file.write(('{}{}'.format('central_mass (code units) = ', cmass)))
-    file.write('\n\n')
-    file.write(('{}'.format('solitons ([mass, [x, y, z], [vx, vy, vz], phase]): \n')))
-    for s in range(len(solitons)):
-        file.write(('{}{}{}{}{}'.format('soliton', s, ' = ', solitons[s], '\n')))
-    file.write(('{}{}{}{}{}{}'.format('\ns_mass_unit = ', s_mass_unit, ', s_position_unit = ', s_position_unit,
-                                      ', s_velocity_unit = ', s_velocity_unit)))
-    file.write(
-        '\n\nNote: If the above units are blank, this means that the soliton parameters were specified in code units')
-    file.close()
-
-########################################################################################################################
-    loc = save_path + '/' + timestamp
+    ##########################################################################################
+    # PRE-LOOP ENERGY CALCULATION
 
     if (save_options[3]):
         egylist = []
@@ -454,15 +444,9 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         mtotlist.append(Vcell * np.sum(egyarr))
 
 
-#########################################################################################################################
 
-
-    halfstepornot = 1  # 1 for a half step 0 for a full step
-    tenth = float(save_number/10)
-
-
-    ###############################
-    # HERE I'M ADDING IN THE PRE-LOOP SAVE I.E. INITIAL CONFIG
+    ##########################################################################################
+    # PRE-LOOP SAVE I.E. INITIAL CONFIG
 
     if (save_options[0]):
         if (npy):
@@ -508,27 +492,19 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             dset = f.create_dataset("init", data=psi)
             f.close()
     if (save_options[4]):
-        # print("saving something") #it takes about 1-2 seconds extra to evaluate this section (for resol=512) It could possibly be optimised by using numba or numexpr for the mass_c line and/or C = np.sum line. Not a big deal for now unless many saves are made.
-        x_pos, y_pos, z_pos = np.unravel_index((rho.argmax()), rho.shape)
-        delta_x = gridlength / float(resol)
-        M = mass_c(rho, gridlength, resol)
-        rc2 = (6.838 / M) ** 2
-        C = np.sum(rho[(xarray - xarray[x_pos, :, :]) ** 2 + (yarray - yarray[:, y_pos, :]) ** 2 + (
-            zarray - zarray[:, :, z_pos]) ** 2 < rc2]) * (delta_x) ** 3 / M  # how to do this better?
-        stability[0] = C
-        xzplane = rho[:, y_pos, :]
-        if (npz):
-            file_name = "xzplane_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
-    if (save_options[5]):
         line = rho[:, int(resol / 2), int(resol / 2)]
         file_name2 = "line_#{0}.npy".format(0)
         np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
         
 
-    ############################################
+
+    ##########################################################################################
     # LOOP NOW BEGINS
 
+    halfstepornot = 1  # 1 for a half step 0 for a full step
+
+    tenth = float(save_number/10) #This parameter is used if energy outputs are saved while code is running.
+    # See commented section below (line 585)
 
     clear_output()
     print("The total number of steps is %.0f" % actual_num_steps)
@@ -559,8 +535,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             rho = ne.evaluate("real(abs(psi)**2)")
             halfstepornot = 1
 
-        #############################################################################33
-        #Next block calculates the energies, still within the above if statement so only calculates energy at each save, not at each timestep.
+        #Next block calculates the energies at each save, not at each timestep.
             if (save_options[3]):
 
                 # Gravitational potential energy density associated with the central potential
@@ -582,7 +557,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
                 funct = fft_psi(psi)
                 funct = ne.evaluate('-karray2*funct')
-                # ifft_calc = pyfftw.builders.ifftn(calc, axes=(0, 1, 2), threads=num_threads)
                 funct = ifft_funct(funct)
                 egyarr = ne.evaluate('real(-0.5*conj(psi)*funct)')
                 ekandqlist.append(Vcell * np.sum(egyarr))
@@ -594,8 +568,8 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 mtotlist.append(Vcell * np.sum(egyarr))
 
 
-#Uncomment next section if partially complete energy lists desired as simulation runs.
-#In this way, some energy data will be saved even if the simulation is terminated early.
+        #Uncomment next section if partially complete energy lists desired as simulation runs.
+        #In this way, some energy data will be saved even if the simulation is terminated early.
 
                 # if (ix+1) % tenth == 0:
                 #     label = (ix+1)/tenth
@@ -610,6 +584,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
 
         ################################################################################
+        # SAVE DESIRED OUTPUTS
 
         if (save_options[0] and ((ix + 1) % its_per_save) == 0):
             if (npy):
@@ -655,29 +630,23 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 dset = f.create_dataset("init", data=psi)
                 f.close()
         if (save_options[4] and ((ix + 1) % its_per_save) == 0):
-            # print("saving something") #it takes about 1-2 seconds extra to evaluate this section (for resol=512) It could possibly be optimised by using numba or numexpr for the mass_c line and/or C = np.sum line. Not a big deal for now unless many saves are made.
-            x_pos, y_pos, z_pos = np.unravel_index((rho.argmax()), rho.shape)
-            delta_x = gridlength / float(resol)
-            M = mass_c(rho, gridlength, resol)
-            rc2 = (6.838 / M) ** 2
-            C = np.sum(rho[(xarray - xarray[x_pos, :, :]) ** 2 + (yarray - yarray[:, y_pos, :]) ** 2 + (
-            zarray - zarray[:, :, z_pos]) ** 2 < rc2]) * (delta_x) ** 3 / M  # how to do this better?
-            stability[int((ix + 1) / its_per_save)] = C
-            xzplane = rho[:, y_pos, :]
-            if (npz):
-                file_name = "xzplane_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
-        if (save_options[5] and ((ix + 1) % its_per_save) == 0):
             line = rho[:, int(resol/2), int(resol / 2)]
             file_name2 = "line_#{0}.npy".format((ix + 1) / its_per_save)
             np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
 
-        # Updating time information for the progress bar at each iteration
+
+
+        ################################################################################
+        # UPDATE INFORMATION FOR PROGRESS BAR
+
         tint = time.time() - tinit
         tinit = time.time()
         prog_bar(actual_num_steps, ix + 1, tint)
 
-######Loop ends here
+
+
+    ################################################################################
+    # LOOP ENDS
 
     clear_output()
     print ('\n')
