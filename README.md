@@ -9,6 +9,9 @@ In order to run the Jupyter notebook, a number of Python packages must first be 
 ###### matplotlib
 sudo apt-get install python-matplotlib
 
+Note: Errors may be encountered for older matplotlib versions. Please ensure you have the latest version:
+sudo pip install --upgrade matplotlib
+
 ###### numba
 sudo apt-get install zlib1g-dev llvm-3.5-dev
 
