@@ -676,10 +676,10 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         egpcmlist.append(Vcell * np.sum(egyarr))
         tot = Vcell * np.sum(egyarr)
 
-        egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
-        plane_egp = egyarr[:, :, int(resol / 2)]
-        file_name = "egp_plane_#{0}.npy".format(0)
-        np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
+        # egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
+        # plane_egp = egyarr[:, :, int(resol / 2)]
+        # file_name = "egp_plane_#{0}.npy".format(0)
+        # np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
 
         egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
         egpsilist.append(Vcell * np.sum(egyarr))
@@ -701,7 +701,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
 
 #########################################################################################################################
 #New section to compute angular momentum
-    if (save_options[6]):
+    if (save_options[5]):
 
         lxlist = []
         lylist = []
@@ -795,20 +795,20 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
             f = h5py.File(file_name, 'w')
             dset = f.create_dataset("init", data=psi)
             f.close()
+    # if (save_options[4]):
+    #     # print("saving something") #it takes about 1-2 seconds extra to evaluate this section (for resol=512) It could possibly be optimised by using numba or numexpr for the mass_c line and/or C = np.sum line. Not a big deal for now unless many saves are made.
+    #     x_pos, y_pos, z_pos = np.unravel_index((rho.argmax()), rho.shape)
+    #     delta_x = gridlength / float(resol)
+    #     M = mass_c(rho, gridlength, resol)
+    #     rc2 = (6.838 / M) ** 2
+    #     C = np.sum(rho[(xarray - xarray[x_pos, :, :]) ** 2 + (yarray - yarray[:, y_pos, :]) ** 2 + (
+    #         zarray - zarray[:, :, z_pos]) ** 2 < rc2]) * (delta_x) ** 3 / M  # how to do this better?
+    #     stability[0] = C
+    #     xzplane = rho[:, y_pos, :]
+    #     if (npz):
+    #         file_name = "xzplane_#{0}.npz".format(0)
+    #         np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
     if (save_options[4]):
-        # print("saving something") #it takes about 1-2 seconds extra to evaluate this section (for resol=512) It could possibly be optimised by using numba or numexpr for the mass_c line and/or C = np.sum line. Not a big deal for now unless many saves are made.
-        x_pos, y_pos, z_pos = np.unravel_index((rho.argmax()), rho.shape)
-        delta_x = gridlength / float(resol)
-        M = mass_c(rho, gridlength, resol)
-        rc2 = (6.838 / M) ** 2
-        C = np.sum(rho[(xarray - xarray[x_pos, :, :]) ** 2 + (yarray - yarray[:, y_pos, :]) ** 2 + (
-            zarray - zarray[:, :, z_pos]) ** 2 < rc2]) * (delta_x) ** 3 / M  # how to do this better?
-        stability[0] = C
-        xzplane = rho[:, y_pos, :]
-        if (npz):
-            file_name = "xzplane_#{0}.npz".format(0)
-            np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
-    if (save_options[5]):
         line = rho[:, int(resol / 2), int(resol / 2)]
         file_name2 = "line_#{0}.npy".format(0)
         np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
@@ -868,11 +868,11 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 egpcmlist.append(Vcell * np.sum(egyarr))
                 tot = Vcell * np.sum(egyarr)
 
-                egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
-                if ((ix + 1) % its_per_save) == 0:
-                    plane_egp = egyarr[:, :, int(resol / 2)]
-                    file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
-                    np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
+                # egyarr = ne.evaluate('egyarr + real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
+                # if ((ix + 1) % its_per_save) == 0:
+                #     plane_egp = egyarr[:, :, int(resol / 2)]
+                #     file_name = "egp_plane_#{0}.npy".format((ix + 1) / its_per_save)
+                #     np.save(os.path.join(os.path.expanduser(loc), file_name), plane_egp)
 
                 # Gravitational potential energy density of self-interaction of the condensate
                 egyarr = ne.evaluate('real(0.5*(phisp+(cmass)/distarray)*real((abs(psi))**2))')
@@ -908,7 +908,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 #     np.save(os.path.join(os.path.expanduser(loc), file_name), ekandqlist)
             # Next block calculates the angular momentum, still within the above if statement so only calculates energy at each save, not at each timestep.
             #Note that angular momentum is not conserved under PBCs, so this will vary as material reaches grid boundaries.
-            if (save_options[6]):
+            if (save_options[5]):
 
                 funct = fft_psi(psi)
                 funct = ne.evaluate('kyarray*funct')
@@ -992,19 +992,6 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 dset = f.create_dataset("init", data=psi)
                 f.close()
         if (save_options[4] and ((ix + 1) % its_per_save) == 0):
-            # print("saving something") #it takes about 1-2 seconds extra to evaluate this section (for resol=512) It could possibly be optimised by using numba or numexpr for the mass_c line and/or C = np.sum line. Not a big deal for now unless many saves are made.
-            x_pos, y_pos, z_pos = np.unravel_index((rho.argmax()), rho.shape)
-            delta_x = gridlength / float(resol)
-            M = mass_c(rho, gridlength, resol)
-            rc2 = (6.838 / M) ** 2
-            C = np.sum(rho[(xarray - xarray[x_pos, :, :]) ** 2 + (yarray - yarray[:, y_pos, :]) ** 2 + (
-            zarray - zarray[:, :, z_pos]) ** 2 < rc2]) * (delta_x) ** 3 / M  # how to do this better?
-            stability[int((ix + 1) / its_per_save)] = C
-            xzplane = rho[:, y_pos, :]
-            if (npz):
-                file_name = "xzplane_#{0}.npz".format((ix + 1) / its_per_save)
-                np.savez(os.path.join(os.path.expanduser(loc), file_name), xzplane)
-        if (save_options[5] and ((ix + 1) % its_per_save) == 0):
             line = rho[:, int(resol/2), int(resol / 2)]
             file_name2 = "line_#{0}.npy".format((ix + 1) / its_per_save)
             np.save(os.path.join(os.path.expanduser(loc), file_name2), line)
@@ -1038,7 +1025,7 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         file_name = "masslist.npy"
         np.save(os.path.join(os.path.expanduser(loc), file_name), mtotlist)
 
-    if (save_options[6]):
+    if (save_options[5]):
         file_name = "lxlist.npy"
         np.save(os.path.join(os.path.expanduser(loc), file_name), lxlist)
         file_name = "lylist.npy"
