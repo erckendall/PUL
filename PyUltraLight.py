@@ -268,6 +268,8 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
     file.write('\n')
     file.write(('{}{}'.format('start_time (code units) = ', t0)))
     file.write('\n')
+    file.write(('{}{}'.format('step_factor  = ', step_factor)))
+    file.write('\n')
     file.write(('{}{}'.format('central_mass (code units) = ', cmass)))
     file.write('\n\n')
     file.write(('{}'.format('solitons ([mass, [x, y, z], [vx, vy, vz], phase]): \n')))
