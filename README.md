@@ -4,25 +4,9 @@ PyUltraLight Repository
 
 # Prerequisites
 
-In order to run the Jupyter notebook, a number of Python packages must first be installed. These include matplotlib, numba, pyfftw, and h5py. These can be installed from the command line in ubuntu as follows:
+In order to run the Jupyter notebook, a number of Python prerequisites must first be installed. The full list of modules required by the main code and the notebook is:
 
-###### matplotlib
-sudo apt-get install python-matplotlib
+numpy, numexpr, numba, h5py, pyfftw, time, sys, os, matplotlib, math, multiprocessing.
 
 Note: Errors may be encountered for older matplotlib versions. Please ensure you have the latest version:
-sudo pip install --upgrade matplotlib
-
-###### numba
-sudo apt-get install zlib1g-dev llvm-3.5-dev
-
-LLVM_CONFIG=/usr/bin/llvm-config-3.5 sudo -E pip2 install llvmlite
-
-sudo pip2 install enum34funcsigs numba
-
-###### pyfftw
-sudo apt-get install libfftw3-dev libfftw3-doc
-
-sudo pip2 install pyfftw
-
-###### h5py
-sudo pip2 install h5py	
+pip install --upgrade matplotlib
