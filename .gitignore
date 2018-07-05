@@ -1,5 +1,9 @@
 *.pyc
 *.npy
+*.hdf5
+*.npz
 .ipynb_checkpoints
 TestOutput/**
-! TestOutput/README.MD
+Visualisations/**
+LICENSE.md
+README.md
