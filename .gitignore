@@ -5,5 +5,5 @@
 .ipynb_checkpoints
 TestOutput/**
 Visualisations/**
-LICENSE.md
-README.md
+#LICENSE.md
+/README.md
