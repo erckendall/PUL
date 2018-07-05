@@ -7,6 +7,4 @@ Each time the code is run, a new folder will be created within this TestOutput d
 
 A temporary "timestamp.txt" file will also be created for each run, which is used in the Jupyter notebook "Visualisations" section. It is overwritten each run.
 
-changed
-
 
