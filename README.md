@@ -10,3 +10,6 @@ numpy, numexpr, numba, h5py, pyfftw, time, sys, os, matplotlib, math, multiproce
 
 Note: Errors may be encountered for older matplotlib versions. Please ensure you have the latest version:
 pip install --upgrade matplotlib
+
+check
+
