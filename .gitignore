@@ -1,3 +1,5 @@
 *.pyc
 *.npy
-
+.ipynb_checkpoints
+#TestOutput/**
+#! TestOutput/README.MD
