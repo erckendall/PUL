@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import scipy.integrate as si
 
 #Note that the spatial resolution of the profile must match the specification of delta_x in the main code.
-dr = .00001
+dr = .001
 max_radius = 9
 rge = max_radius/dr
 
