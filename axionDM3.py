@@ -499,6 +499,8 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
         if (npy):
             file_name = "rho_#{0}.npy".format(0)
             np.save(os.path.join(os.path.expanduser(loc), file_name), rho)
+            file_name = "phi_#{0}.npy".format(0)
+            np.save(os.path.join(os.path.expanduser(loc), file_name), phisp)
         if (npz):
             file_name = "rho_#{0}.npz".format(0)
             np.savez(os.path.join(os.path.expanduser(loc), file_name), rho)
@@ -675,6 +677,8 @@ def evolve(central_mass, num_threads, length, length_units, resol, duration, dur
                 if (npy):
                     file_name = "rho_#{0}.npy".format(int((ix + 1) / its_per_save))
                     np.save(os.path.join(os.path.expanduser(loc), file_name), rho)
+                    file_name = "phi_#{0}.npy".format(int((ix + 1) / its_per_save))
+                    np.save(os.path.join(os.path.expanduser(loc), file_name), phisp)
                 if (npz):
                     file_name = "rho_#{0}.npz".format(int((ix + 1) / its_per_save))
                     np.savez(os.path.join(os.path.expanduser(loc), file_name), rho)
