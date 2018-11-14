@@ -130,6 +130,18 @@ for i in range(int(rge)):
         print ('{}{}'.format('M_core = ', partial))
         break
 
+difflist = []
+for i in range(int(rge)):
+    difflist.append(abs(la[i]**2 - 0.001))
+r1000 = lr[difflist.index(min(difflist))]
+
+
+partial = 0.
+for i in range(int(rge)):
+    partial = partial + intlist[i]*4*np.pi*dr
+    if lr[i] >= r1000:
+        print ('{}{}'.format('M_1000 = ', partial))
+        break
 
 print ('{}{}'.format('Full width at half maximum density is ', fwhm))
 print ('{}{}'.format('Beta is ', beta))
